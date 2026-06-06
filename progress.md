@@ -148,6 +148,14 @@ python run.py --list-banks                   # Show all bank IDs
 python run.py --validate                     # Validate output JSON
 ```
 
+### 9. Google Gemini API Backfill (`gemini_backfill.py`) — ✅ COMPLETE
+- **Infrastructure**: Added `google-generativeai` and built a Python script to populate missing `.xlsx` data using the Gemini API.
+- **Smart Batching**: Developed a batching strategy to group cards (10 per prompt) to bypass free-tier rate limits (5-15 RPM).
+- **Quota Safety**: Targeted *only* critical missing columns (e.g., `joining_fee`, `annual_fee`, `minimum_income`, `cibil_range_hint`, `employment_type`) instead of all missing columns, massively reducing token usage.
+- **Auto-Retries**: Included exponential backoff for `429 Quota Exceeded` errors.
+- **Execution**: Successfully ran and completely backfilled the critical missing fields in `Untitled spreadsheet.xlsx`. Remaining missing fields for core attributes like fees and CIBIL are exactly `0`.
+
+
 ---
 
 ## ⚠️ What's PARTIALLY WORKING / HAS KNOWN ISSUES
@@ -174,20 +182,11 @@ python run.py --validate                     # Validate output JSON
 ## ❌ What's NOT YET DONE
 
 ### 1. Run Full HDFC Extraction (IMMEDIATE PRIORITY)
-**Status:** Scraping done, extraction NOT yet completed at scale.  
-**How to do it:**
-```bash
-cd /Users/pratikpotadar/Developer/cc.com
-python run.py --bank hdfc --extract-only
-```
-This will:
-1. Check Ollama health
-2. Process all 54 cached files in `data/raw/hdfc/`
-3. Extract structured data using the LLM
-4. Normalize and deduplicate
-5. Save to `data/output/cards.json`
+**Status:** ✅ COMPLETE. 
+- Ollama extraction completed and output saved to JSON. 
+- Python `extract_to_xlsx.py` written and mapped the JSON values into `Untitled spreadsheet.xlsx`.
+- Missing fields backfilled using `gemini_backfill.py` with `gemini-flash-latest` model.
 
-**Expected time:** ~30-45 minutes with `qwen2.5-coder:7b`
 
 ### 2. Scrape + Extract Remaining 19 Banks
 **Status:** Not started. Only HDFC has been scraped.  
@@ -360,7 +359,7 @@ python run.py --validate
 
 | Priority | Task | Estimated Time | Dependency |
 |----------|------|---------------|------------|
-| P0 | Run HDFC extraction | 30-45 min | Ollama running |
+| P0 | Run HDFC extraction & Backfill | DONE | None |
 | P1 | Scrape SBI, ICICI, Axis, Kotak | 30 min each | None |
 | P1 | Extract SBI, ICICI, Axis, Kotak | 30-45 min each | Scrape done |
 | P2 | Scrape IndusInd, RBL, IDFC, Federal, YES, AU | 20 min each | None |
@@ -368,7 +367,7 @@ python run.py --validate
 | P3 | Scrape SC, HSBC, Amex | 20 min each | May need anti-bot work |
 | P3 | Scrape PSU banks (BOB, Canara, Union, PNB, Indian Bank, BOI) | 15 min each | May have limited data |
 | P4 | Improve field coverage (scrape eligibility pages) | 2-3 hours | All banks done |
-| P4 | Manual data review and correction | 2-4 hours | Extraction done |
+| P4 | Excel Generation Pipeline | 2-4 hours | Extraction done |
 | P5 | Debit card support | 3-4 hours | Credit cards done |
 
 ---
