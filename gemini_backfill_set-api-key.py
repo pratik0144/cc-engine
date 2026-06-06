@@ -4,8 +4,10 @@ import json
 import openpyxl
 import google.generativeai as genai
 
+from dotenv import load_dotenv
+
 # Setup API Key provided by user
-# Make sure to set the GEMINI_API_KEY environment variable
+load_dotenv() # Load variables from .env file
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 # Using gemini-flash-latest because 2.5-flash has a strict 20 req/day limit
